@@ -18,36 +18,37 @@ public class Main {
     private final FetchApi fetchApi = new FetchApi();
     private final ConvertData convertData = new ConvertData();
 
-    public void showMenu() {
-        List<SeasonData> seasons = new ArrayList<>();
+    public void start() {
+        var opt = -1;
+        while (opt != 0) {
+            var menu = """
+           \n>===Select an option===<
+           
+           1 - Search series
+           2 - Search episodes
+           
+           0 - Exit
+           >===                  ===<
+           """;
 
-        // gets series data
-        System.out.print("Enter series name you want to search for: ");
-        var seriesName = sc.nextLine().replace(" ", "+");
 
-        var json = fetchApi.getData(
-                URL +
-                        seriesName +
-                        API_KEY_OMDB);
+            System.out.println(menu);
+            opt = sc.nextInt();
+            sc.nextLine();
 
-
-        var seriesData = convertData.getData(json, SeriesData.class);
-        System.out.println();
-        // gets season data
-        try {
-            for (int i = 1; i <= seriesData.seasons(); i++) {
-                json = fetchApi.getData(
-                        URL +
-                                seriesName +
-                                "&season=" +
-                                i +
-                                API_KEY_OMDB);
-
-                var seasonData = convertData.getData(json, SeasonData.class);
-                seasons.add(seasonData);
+            switch (opt) {
+                case 1:
+                    break;
+                case 2:
+                    searchEpisodesBySeries();
+                    break;
+                case 0:
+                    System.out.println("Closing the app...");
+                    break;
+                default:
+                    System.out.println("Invalid option");
             }
-        }catch (NullPointerException e) {
-            System.out.println("Series not found");
+
         }
 
 
@@ -66,9 +67,9 @@ public class Main {
         // show episode's title for each season
         // seasons.forEach(s -> s.episodes().forEach(e -> System.out.println(e.title())));
 
-        List<EpisodeData> episodeDataList = seasons.stream()
+        /*List<EpisodeData> episodeDataList = seasons.stream()
                 .flatMap(s -> s.episodes().stream())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());*/
 
         /*episodeDataList.stream()
                 .filter(e -> !e.rating().equals("N/A"))
@@ -78,10 +79,10 @@ public class Main {
 
 
         // gets the list of episodes of each season
-        List<Episode> episodeList = seasons.stream()
+        /*List<Episode> episodeList = seasons.stream()
                 .flatMap(s -> s.episodes().stream()
                         .map(e -> new Episode(s.seasonNumber(), e)))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());*/
 
         // episodeList.forEach(e -> System.out.println(e));
 
@@ -123,7 +124,7 @@ public class Main {
             System.out.println("Not found");
         }*/
 
-        Map<Integer, Double> ratingsBySeason = episodeList.stream()
+        /*Map<Integer, Double> ratingsBySeason = episodeList.stream()
                 .filter(e -> e.getRating() > 0.0)
                 .collect(Collectors.groupingBy(
                         Episode::getSeasonNumber,
@@ -141,6 +142,43 @@ public class Main {
         System.out.println("Min Rating: " + est.getMin());
         Stream.iterate(0, n -> n + 1)
                 .limit(10)
-                .forEach(System.out::println);
+                .forEach(System.out::println);*/
+    }
+
+    private SeriesData getSeriesData() {
+        // gets series data
+        System.out.print("Enter series name you want to search for: ");
+        var seriesName = sc.nextLine().replace(" ", "+");
+
+        var json = fetchApi.getData(
+                URL +
+                        seriesName +
+                        API_KEY_OMDB);
+
+        return convertData.getData(json, SeriesData.class);
+    }
+
+    private void searchEpisodesBySeries() {
+        SeriesData seriesData = getSeriesData();
+        List<SeasonData> seasons = new ArrayList<>();
+
+        // gets season data
+        try {
+            for (int i = 1; i <= seriesData.seasons(); i++) {
+                var json = fetchApi.getData(
+                        URL +
+                                seriesData.title().replace(" ", "+") +
+                                "&season=" +
+                                i +
+                                API_KEY_OMDB);
+
+                var seasonData = convertData.getData(json, SeasonData.class);
+                seasons.add(seasonData);
+            }
+        } catch (NullPointerException e) {
+            System.out.println("Series not found");
+        }
+
+        seasons.forEach(System.out::println);
     }
 }
