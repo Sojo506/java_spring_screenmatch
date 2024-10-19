@@ -12,6 +12,6 @@ public record SeriesData(
         @JsonAlias("Plot") String plot,
         @JsonAlias("Poster") String poster,
         @JsonAlias("totalSeasons") Integer seasons,
-        @JsonAlias("imdbRating") double rating
+        @JsonAlias("imdbRating") String rating
     ) {
 }
