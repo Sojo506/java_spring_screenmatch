@@ -2,6 +2,7 @@ package com.oracleone.screenmatch.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.OptionalDouble;
 
 @Entity
@@ -23,6 +24,9 @@ public class Series {
     private String poster;
     private Integer seasons;
     private double rating;
+
+    @Transient
+    private List<Episode> episodes;
 
     public Series(SeriesData seriesData) {
         this.title = seriesData.title();
