@@ -1,10 +1,23 @@
 package com.oracleone.screenmatch.model;
 
+import jakarta.persistence.*;
+
 import java.util.OptionalDouble;
 
+@Entity
+@Table(name = "series")
+
 public class Series {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long Id;
+
+    @Column(unique = true)
     private String title;
+
+    @Enumerated(EnumType.STRING)
     private Category genre;
+
     private String actors;
     private String plot;
     private String poster;
@@ -19,6 +32,14 @@ public class Series {
         this.poster = seriesData.poster();
         this.seasons = seriesData.seasons();
         this.rating = OptionalDouble.of(Double.valueOf(seriesData.rating())).orElse(0);
+    }
+
+    public Long getId() {
+        return Id;
+    }
+
+    public void setId(Long id) {
+        Id = id;
     }
 
     public String getTitle() {
