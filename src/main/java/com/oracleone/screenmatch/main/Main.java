@@ -71,8 +71,12 @@ public class Main {
                         seriesName +
                         API_KEY_OMDB);
 
+        var data = convertData.getData(json, SeriesData.class);
 
-        return convertData.getData(json, SeriesData.class);
+        if (data.title() == null) {
+            throw new NullPointerException();
+        }
+        return data;
     }
 
     private void searchEpisodesBySeries() {
@@ -100,9 +104,13 @@ public class Main {
     }
 
     private void searchSeries() {
-        SeriesData seriesData = getSeriesData();
-        seriesDataList.add(seriesData);
-        System.out.println("seriesData = " + seriesData);
+        try {
+            SeriesData seriesData = getSeriesData();
+            seriesDataList.add(seriesData);
+            System.out.println("Found: " + seriesData);
+        } catch (NullPointerException e) {
+            System.out.println("Series not found");
+        }
     }
 
     private void showSearchedSeries() {
