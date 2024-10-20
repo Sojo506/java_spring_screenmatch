@@ -14,4 +14,13 @@ public enum Category {
     Category(String categoryOMDB) {
         this.categoryOMDB = categoryOMDB;
     }
+
+    public static Category fromString(String text) {
+        for (Category category : Category.values()) {
+            if (category.categoryOMDB.equals(text)) {
+                return category;
+            }
+        }
+        throw new IllegalArgumentException("Category wasn't found: " + text);
+    }
 }
