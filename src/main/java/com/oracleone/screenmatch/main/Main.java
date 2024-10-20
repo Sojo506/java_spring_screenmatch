@@ -1,13 +1,16 @@
 package com.oracleone.screenmatch.main;
 
 import com.oracleone.screenmatch.model.SeasonData;
+import com.oracleone.screenmatch.model.Series;
 import com.oracleone.screenmatch.model.SeriesData;
 import com.oracleone.screenmatch.service.ConvertData;
 import com.oracleone.screenmatch.service.FetchApi;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Main {
     private final String API_KEY_OMDB = "&apikey=6ee384bf";
@@ -15,6 +18,7 @@ public class Main {
     private final Scanner sc = new Scanner(System.in);
     private final FetchApi fetchApi = new FetchApi();
     private final ConvertData convertData = new ConvertData();
+    private List<SeriesData> seriesDataList = new ArrayList<>();
 
     public void start() {
         var opt = -1;
@@ -24,8 +28,9 @@ public class Main {
                     
                     1 - Search series
                     2 - Search episodes
-                    
+                    3 - Show searched series
                     0 - Exit
+                    
                     >===                  ===<
                     """;
 
@@ -36,9 +41,13 @@ public class Main {
 
             switch (opt) {
                 case 1:
+                    searchSeries();
                     break;
                 case 2:
                     searchEpisodesBySeries();
+                    break;
+                case 3:
+                    showSearchedSeries();
                     break;
                 case 0:
                     System.out.println("Closing the app...");
@@ -55,11 +64,13 @@ public class Main {
         // gets series data
         System.out.print("Enter series name you want to search for: ");
         var seriesName = sc.nextLine().replace(" ", "+");
+        System.out.println();
 
         var json = fetchApi.getData(
                 URL +
                         seriesName +
                         API_KEY_OMDB);
+
 
         return convertData.getData(json, SeriesData.class);
     }
@@ -88,6 +99,23 @@ public class Main {
         seasons.forEach(System.out::println);
     }
 
+    private void searchSeries() {
+        SeriesData seriesData = getSeriesData();
+        seriesDataList.add(seriesData);
+        System.out.println("seriesData = " + seriesData);
+    }
+
+    private void showSearchedSeries() {
+        List<Series> series = new ArrayList<>();
+        series = seriesDataList.stream()
+                .map(Series::new)
+                .collect(Collectors.toList());
+
+        series.stream()
+                .sorted(Comparator.comparing(Series::getGenre))
+                .forEach(System.out::println);
+
+    }
 
 }
 
