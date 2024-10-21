@@ -3,6 +3,7 @@ package com.oracleone.screenmatch.main;
 import com.oracleone.screenmatch.model.SeasonData;
 import com.oracleone.screenmatch.model.Series;
 import com.oracleone.screenmatch.model.SeriesData;
+import com.oracleone.screenmatch.repository.ISeriesRepository;
 import com.oracleone.screenmatch.service.ConvertData;
 import com.oracleone.screenmatch.service.FetchApi;
 
@@ -18,7 +19,12 @@ public class Main {
     private final Scanner sc = new Scanner(System.in);
     private final FetchApi fetchApi = new FetchApi();
     private final ConvertData convertData = new ConvertData();
+    private ISeriesRepository repository;
     private List<SeriesData> seriesDataList = new ArrayList<>();
+
+    public Main(ISeriesRepository repository) {
+        this.repository = repository;
+    }
 
     public void start() {
         var opt = -1;
@@ -106,7 +112,9 @@ public class Main {
     private void searchSeries() {
         try {
             SeriesData seriesData = getSeriesData();
-            seriesDataList.add(seriesData);
+            Series series = new Series(seriesData);
+            repository.save(series);
+            //seriesDataList.add(seriesData);
             System.out.println("Found: " + seriesData);
         } catch (NullPointerException e) {
             System.out.println("Series not found");
@@ -114,10 +122,7 @@ public class Main {
     }
 
     private void showSearchedSeries() {
-        List<Series> series = new ArrayList<>();
-        series = seriesDataList.stream()
-                .map(Series::new)
-                .collect(Collectors.toList());
+        List<Series> series = repository.findAll();
 
         series.stream()
                 .sorted(Comparator.comparing(Series::getGenre))
