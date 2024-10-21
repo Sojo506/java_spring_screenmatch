@@ -25,7 +25,7 @@ public class Series {
     private Integer seasons;
     private double rating;
 
-    @OneToMany(mappedBy = "series")
+    @OneToMany(mappedBy = "series", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Episode> episodes;
 
     public Series(){}
@@ -109,6 +109,7 @@ public class Series {
     }
 
     public void setEpisodes(List<Episode> episodes) {
+        episodes.forEach(e -> e.setSeries(this));
         this.episodes = episodes;
     }
 
@@ -122,6 +123,7 @@ public class Series {
                 ", poster='" + poster + '\'' +
                 ", seasons=" + seasons +
                 ", rating=" + rating +
+                ", episodes=" + episodes +
                 '}';
     }
 }
