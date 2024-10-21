@@ -104,6 +104,14 @@ public class Series {
         this.rating = rating;
     }
 
+    public List<Episode> getEpisodes() {
+        return episodes;
+    }
+
+    public void setEpisodes(List<Episode> episodes) {
+        this.episodes = episodes;
+    }
+
     @Override
     public String toString() {
         return "{" +
