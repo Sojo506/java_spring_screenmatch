@@ -21,6 +21,7 @@ public class Episode {
     private LocalDate releaseDate;
 
     @ManyToOne
+    @JoinColumn(name = "series_id")
     private Series series;
 
     public Episode(){}
