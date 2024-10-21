@@ -1,5 +1,6 @@
 package com.oracleone.screenmatch.main;
 
+import com.oracleone.screenmatch.model.Episode;
 import com.oracleone.screenmatch.model.SeasonData;
 import com.oracleone.screenmatch.model.Series;
 import com.oracleone.screenmatch.model.SeriesData;
@@ -7,10 +8,7 @@ import com.oracleone.screenmatch.repository.ISeriesRepository;
 import com.oracleone.screenmatch.service.ConvertData;
 import com.oracleone.screenmatch.service.FetchApi;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -19,6 +17,7 @@ public class Main {
     private final Scanner sc = new Scanner(System.in);
     private final FetchApi fetchApi = new FetchApi();
     private final ConvertData convertData = new ConvertData();
+    List<Series> series;
     private ISeriesRepository repository;
     private List<SeriesData> seriesDataList = new ArrayList<>();
 
@@ -86,15 +85,23 @@ public class Main {
     }
 
     private void searchEpisodesBySeries() {
-        SeriesData seriesData = getSeriesData();
-        List<SeasonData> seasons = new ArrayList<>();
+        //SeriesData seriesData = getSeriesData();
+        showSearchedSeries();
+        System.out.print("Enter the name of the series you want to watch the episodes of: ");
+        var seriesName = sc.nextLine().toLowerCase();
 
-        // gets season data
-        try {
-            for (int i = 1; i <= seriesData.seasons(); i++) {
+        Optional<Series> aux = series.stream()
+                .filter(s -> s.getTitle().toLowerCase().contains(seriesName))
+                .findFirst();
+
+        if (aux.isPresent()) {
+            var seriesFound = aux.get();
+            List<SeasonData> seasons = new ArrayList<>();
+
+            for (int i = 1; i <= seriesFound.getSeasons(); i++) {
                 var json = fetchApi.getData(
                         URL +
-                                seriesData.title().replace(" ", "+") +
+                                seriesFound.getTitle().replace(" ", "+") +
                                 "&season=" +
                                 i +
                                 API_KEY_OMDB);
@@ -102,11 +109,21 @@ public class Main {
                 var seasonData = convertData.getData(json, SeasonData.class);
                 seasons.add(seasonData);
             }
-        } catch (NullPointerException e) {
+
+            seasons.forEach(System.out::println);
+
+            List<Episode> episodes = seasons.stream()
+                    .flatMap(d -> d.episodes().stream()
+                            .map(e -> new Episode(d.seasonNumber(), e)))
+                    .collect(Collectors.toList());
+
+            seriesFound.setEpisodes(episodes);
+            repository.save(seriesFound);
+        } else {
             System.out.println("Series not found");
         }
 
-        seasons.forEach(System.out::println);
+
     }
 
     private void searchSeries() {
@@ -122,7 +139,7 @@ public class Main {
     }
 
     private void showSearchedSeries() {
-        List<Series> series = repository.findAll();
+        series = repository.findAll();
 
         series.stream()
                 .sorted(Comparator.comparing(Series::getGenre))
