@@ -25,7 +25,7 @@ public class Series {
     private Integer seasons;
     private double rating;
 
-    @Transient
+    @OneToMany(mappedBy = "series")
     private List<Episode> episodes;
 
     public Series(){}
