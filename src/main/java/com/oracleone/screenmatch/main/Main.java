@@ -1,9 +1,6 @@
 package com.oracleone.screenmatch.main;
 
-import com.oracleone.screenmatch.model.Episode;
-import com.oracleone.screenmatch.model.SeasonData;
-import com.oracleone.screenmatch.model.Series;
-import com.oracleone.screenmatch.model.SeriesData;
+import com.oracleone.screenmatch.model.*;
 import com.oracleone.screenmatch.repository.ISeriesRepository;
 import com.oracleone.screenmatch.service.ConvertData;
 import com.oracleone.screenmatch.service.FetchApi;
@@ -34,6 +31,10 @@ public class Main {
                     1 - Search series
                     2 - Search episodes
                     3 - Show searched series
+                    4 - Search series by title
+                    5 - Top 5 best series
+                    6 - Search series by category
+                    7 - Filter series
                     0 - Exit
                     
                     >===                  ===<
@@ -53,6 +54,18 @@ public class Main {
                     break;
                 case 3:
                     showSearchedSeries();
+                    break;
+                case 4:
+                    searchSeriesByTitle();
+                    break;
+                case 5:
+                    searchTop5Series();
+                    break;
+                case 6:
+                    searchByCategory();
+                    break;
+                case 7:
+                    filterSeries();
                     break;
                 case 0:
                     System.out.println("Closing the app...");
@@ -145,6 +158,58 @@ public class Main {
                 .sorted(Comparator.comparing(Series::getGenre))
                 .forEach(System.out::println);
 
+    }
+
+    private void searchSeriesByTitle() {
+        System.out.print("Enter the name of the series you want to search: ");
+        var seriesName = sc.nextLine().toLowerCase();
+
+        Optional<Series> aux = repository.findByTitleContainsIgnoreCase(seriesName);
+
+        if (aux.isPresent()) {
+            System.out.println("Series found = " + aux);
+        } else {
+            System.out.println("Series not found");
+        }
+    }
+
+    private void searchTop5Series() {
+        List<Series> topSeries = repository.findTop5ByOrderByRatingDesc();
+        topSeries.forEach(s -> System.out.println("Series: " + s.getTitle() +
+                " - Rating: " + s.getRating()));
+    }
+
+    private void searchByCategory() {
+        System.out.print("Enter the category of the series you want to search: ");
+
+        try {
+            var genre = Category.fromString(sc.nextLine());
+
+            List<Series> seriesFound = repository.findByGenre(genre);
+
+            seriesFound.forEach(s -> System.out.println("Series: " + s.getTitle() +
+                    " - Category: " + s.getGenre()));
+
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void filterSeries() {
+        System.out.print("Filter series by number of seasons: ");
+        var seasons = sc.nextInt();
+        sc.nextLine();
+
+        System.out.print("What rating: ");
+        var rating = sc.nextDouble();
+        sc.nextLine();
+
+        List<Series> filteredSeries = repository.findBySeasonsLessThanEqualAndRatingGreaterThanEqual
+                (seasons, rating);
+
+        System.out.println("**Filtered Series**");
+        filteredSeries.forEach(s -> System.out.println("Series: " + s.getTitle() +
+                " - Rating: " + s.getRating()));
     }
 
 }
