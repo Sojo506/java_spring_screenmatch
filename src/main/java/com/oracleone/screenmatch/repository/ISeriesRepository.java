@@ -13,4 +13,7 @@ public interface ISeriesRepository extends JpaRepository<Series, Long> {
     List<Series> findTop5ByOrderByRatingDesc();
 
     List<Series> findByGenre(Category category);
+
+    List<Series> findBySeasonsLessThanEqualAndRatingGreaterThanEqual
+            (Integer seasons, Double rating);
 }
