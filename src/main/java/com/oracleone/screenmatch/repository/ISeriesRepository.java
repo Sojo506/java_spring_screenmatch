@@ -1,6 +1,7 @@
 package com.oracleone.screenmatch.repository;
 
 import com.oracleone.screenmatch.model.Category;
+import com.oracleone.screenmatch.model.Episode;
 import com.oracleone.screenmatch.model.Series;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +19,10 @@ public interface ISeriesRepository extends JpaRepository<Series, Long> {
     List<Series> findBySeasonsLessThanEqualAndRatingGreaterThanEqual
             (Integer seasons, Double rating);
 
-    @Query(value = "SELECT s FROM Series s WHERE s.seasons <= :seasons AND s.rating >= :rating")
+    @Query("SELECT s FROM Series s WHERE s.seasons <= :seasons AND s.rating >= :rating")
     List<Series> seriesBySeasonAndRating(Integer seasons, Double rating);
+
+    @Query("SELECT e FROM Series s JOIN s.episodes e WHERE e.title ILIKE %:episodeName%")
+    List<Episode> episodesByName(String episodeName);
+
 }
