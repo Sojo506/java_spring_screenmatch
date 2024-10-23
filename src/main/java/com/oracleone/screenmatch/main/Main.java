@@ -17,6 +17,7 @@ public class Main {
     List<Series> series;
     private ISeriesRepository repository;
     private List<SeriesData> seriesDataList = new ArrayList<>();
+    private Optional<Series> seriesFound;
 
     public Main(ISeriesRepository repository) {
         this.repository = repository;
@@ -35,6 +36,8 @@ public class Main {
                     5 - Top 5 best series
                     6 - Search series by category
                     7 - Filter series
+                    8 - Search episodes by title
+                    9 - Search top 5 episodes
                     0 - Exit
                     
                     >===                  ===<
@@ -66,6 +69,12 @@ public class Main {
                     break;
                 case 7:
                     filterSeries();
+                    break;
+                case 8:
+                    searchEpisodesByTitle();
+                    break;
+                case 9:
+                    searchTop5Episodes();
                     break;
                 case 0:
                     System.out.println("Closing the app...");
@@ -164,10 +173,10 @@ public class Main {
         System.out.print("Enter the name of the series you want to search: ");
         var seriesName = sc.nextLine().toLowerCase();
 
-        Optional<Series> aux = repository.findByTitleContainsIgnoreCase(seriesName);
+        seriesFound = repository.findByTitleContainsIgnoreCase(seriesName);
 
-        if (aux.isPresent()) {
-            System.out.println("Series found = " + aux);
+        if (seriesFound.isPresent()) {
+            System.out.println("Series found = " + seriesFound.get());
         } else {
             System.out.println("Series not found");
         }
@@ -204,12 +213,32 @@ public class Main {
         var rating = sc.nextDouble();
         sc.nextLine();
 
-        List<Series> filteredSeries = repository.findBySeasonsLessThanEqualAndRatingGreaterThanEqual
-                (seasons, rating);
+        /*List<Series> filteredSeries = repository.findBySeasonsLessThanEqualAndRatingGreaterThanEqual
+                (seasons, rating);*/
+        List<Series> filteredSeries = repository.seriesBySeasonAndRating(seasons, rating);
 
         System.out.println("**Filtered Series**");
         filteredSeries.forEach(s -> System.out.println("Series: " + s.getTitle() +
                 " - Rating: " + s.getRating()));
+    }
+
+    private void searchEpisodesByTitle() {
+        System.out.print("Enter the name of the episode you want to search: ");
+        var episodeTitle = sc.nextLine();
+
+        List<Episode> foundEpisodes = repository.episodesByName(episodeTitle);
+        foundEpisodes.forEach(e -> System.out.printf("Series: %s - Season %d - Episode: %s - Rating: %.2f\n",
+                e.getSeries().getTitle(), e.getSeasonNumber(), e.getTitle(), e.getRating()));
+    }
+
+    private void searchTop5Episodes() {
+        searchSeriesByTitle();
+        if (seriesFound.isPresent()) {
+            Series series = seriesFound.get();
+            List<Episode> top5Episodes = repository.top5Episodes(series);
+            top5Episodes.forEach(e -> System.out.printf("Series: %s - Season %d - Episode: %s - Rating: %.2f\n",
+                    e.getSeries().getTitle(), e.getSeasonNumber(), e.getTitle(), e.getRating()));
+        }
     }
 
 }
