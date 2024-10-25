@@ -1,6 +1,7 @@
 package com.oracleone.screenmatch.service;
 
 import com.oracleone.screenmatch.dto.SeriesDTO;
+import com.oracleone.screenmatch.model.Series;
 import com.oracleone.screenmatch.repository.ISeriesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,15 @@ public class SeriesService {
     private ISeriesRepository repository;
 
     public List<SeriesDTO> getAllSeries() {
-        return (List<SeriesDTO>) repository.findAll().stream()
+        return convertData(repository.findAll());
+    }
+
+    public List<SeriesDTO> getTop5() {
+        return convertData(repository.findTop5ByOrderByRatingDesc());
+    }
+
+    public List<SeriesDTO> convertData(List<Series> series) {
+        return series.stream()
                 .map(s -> new SeriesDTO(
                         s.getTitle(),
                         s.getGenre(),
